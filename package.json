@@ -1,6 +1,6 @@
 {
   "name": "@ksoftm/n8n-nodes-ephemeral-context",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An n8n node for execution-scoped, in-memory ephemeral storage.",
   "keywords": [
     "n8n-community-node-package"
@@ -38,18 +38,6 @@
     "typescript": "^4.2.3"
   },
   "release-it": {
-    "git": {
-      "commitMessage": "chore: release v${version}"
-    },
-    "github": {
-      "release": true
-    },
-    "npm": {
-      "publish": true
-    },
-    "hooks": {
-      "after:bump": "pnpm run build",
-      "after:release": "pnpm publish --no-git-checks"
-    }
+    "$schema": "https://unpkg.com/release-it/schema/release-it.json"
   }
 }
