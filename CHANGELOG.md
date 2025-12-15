@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.0.0...v1.1.0) (2025-12-15)
+
+
+### Features
+
+* **new:** new version release ([6eedc34](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/6eedc340df5acae243d969da86e5cf02f4a7efa0))
+
 # 1.0.0 (2025-12-15)
 
 
