@@ -87,7 +87,7 @@ This node uses Process RAM (Global Scope). It is designed for speed and simplici
 Copy the `dist` folder to your n8n custom nodes directory or install via npm if published:
 
 ```bash
-npm install n8n-nodes-ephemeral-context
+npm install @ksoftm/n8n-nodes-ephemeral-context
 ```
 
 ## License

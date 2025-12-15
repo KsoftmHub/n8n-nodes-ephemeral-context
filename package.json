@@ -1,20 +1,25 @@
 {
-  "name": "n8n-nodes-ephemeral-context",
+  "name": "@ksoftm/n8n-nodes-ephemeral-context",
   "version": "0.1.0",
   "description": "An n8n node for execution-scoped, in-memory ephemeral storage.",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
-  "author": {
-    "name": "Community Developer",
-    "email": "dev@example.com"
+  "author": "Ksoftm",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ksoftm/n8n-nodes-ephemeral-context.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "main": "index.js",
   "scripts": {
     "build": "node bin/build.js",
     "dev": "npm run build -- --watch",
     "lint": "tslint -p tsconfig.json -c tslint.json",
+    "release": "release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
@@ -29,6 +34,21 @@
     "@types/node": "^14.14.31",
     "esbuild": "^0.27.1",
     "n8n-workflow": "^0.116.0",
+    "release-it": "^19.1.0",
     "typescript": "^4.2.3"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": true
+    },
+    "hooks": {
+      "after:bump": "pnpm run build"
+    }
   }
 }
