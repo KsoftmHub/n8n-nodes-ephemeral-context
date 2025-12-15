@@ -99,7 +99,8 @@ export class SessionStore implements INodeType {
                   { name: 'String', value: 'string' },
                   { name: 'Number', value: 'number' },
                   { name: 'Boolean', value: 'boolean' },
-                  { name: 'JSON', value: 'json' },
+                  { name: 'Array', value: 'array' },
+                  { name: 'Object', value: 'object' },
                 ],
                 default: 'string',
               },
@@ -131,13 +132,24 @@ export class SessionStore implements INodeType {
                 default: false,
               },
               {
-                displayName: 'Value (JSON)',
-                name: 'valueJson',
+                displayName: 'Value (Array)',
+                name: 'valueArray',
                 type: 'json',
                 displayOptions: {
-                  show: { type: ['json'] },
+                  show: { type: ['array'] },
+                },
+                default: '[]',
+                description: 'Enter an array (e.g. ["a", "b"])',
+              },
+              {
+                displayName: 'Value (Object)',
+                name: 'valueObject',
+                type: 'json',
+                displayOptions: {
+                  show: { type: ['object'] },
                 },
                 default: '{}',
+                description: 'Enter a JSON object (e.g. {"a": 1})',
               },
             ],
           },
@@ -206,7 +218,8 @@ export class SessionStore implements INodeType {
           { name: 'String', value: 'string' },
           { name: 'Number', value: 'number' },
           { name: 'Boolean', value: 'boolean' },
-          { name: 'JSON / Object', value: 'json' },
+          { name: 'Array', value: 'array' },
+          { name: 'Object', value: 'object' },
         ],
         default: 'string',
         description: 'The type of data you want to store',
@@ -248,13 +261,25 @@ export class SessionStore implements INodeType {
         default: false,
       },
       {
-        displayName: 'Value (JSON)',
+        displayName: 'Value (Array)',
         name: 'value',
         type: 'json',
         displayOptions: {
           show: {
             operation: ['push'],
-            valueType: ['json'],
+            valueType: ['array'],
+          },
+        },
+        default: '[]',
+      },
+      {
+        displayName: 'Value (Object)',
+        name: 'value',
+        type: 'json',
+        displayOptions: {
+          show: {
+            operation: ['push'],
+            valueType: ['object'],
           },
         },
         default: '{}',
@@ -342,12 +367,11 @@ export class SessionStore implements INodeType {
               if (type === 'string') finalValue = item.valueString;
               else if (type === 'number') finalValue = item.valueNumber;
               else if (type === 'boolean') finalValue = item.valueBoolean;
-              else if (type === 'json') {
-                try {
-                  finalValue = typeof item.valueJson === 'string' ? JSON.parse(item.valueJson) : item.valueJson;
-                } catch (e) {
-                  finalValue = {}; // Fallback
-                }
+              else if (type === 'array') {
+                finalValue = typeof item.valueArray === 'string' ? JSON.parse(item.valueArray) : item.valueArray;
+              }
+              else if (type === 'object') {
+                finalValue = typeof item.valueObject === 'string' ? JSON.parse(item.valueObject) : item.valueObject;
               }
 
               SessionStore.setDeep(sessionRef, key, finalValue);
@@ -362,7 +386,7 @@ export class SessionStore implements INodeType {
           const valueType = this.getNodeParameter('valueType', i) as string;
           let value = this.getNodeParameter('value', i) as any;
 
-          if (valueType === 'json' && typeof value === 'string') {
+          if ((valueType === 'array' || valueType === 'object') && typeof value === 'string') {
             try { value = JSON.parse(value); } catch (e) { }
           }
 
