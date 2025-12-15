@@ -1,3 +1,16 @@
+# 1.0.0 (2025-12-15)
+
+
+### Bug Fixes
+
+* **bug:** update the workflow ([0abe9dc](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/0abe9dcca71fa7ca5b534a5f0e99e0d85376a2b9))
+
+
+### Features
+
+* add ephemeral session store node for in-memory data management with garbage collection. ([e409305](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/e409305b9069f4ea1216a5aded1103a6f2acf751))
+* introduce dedicated build script with n8n-workflow externalization and pnpm lock file ([f90929a](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/f90929ae8d0f2fcbd1f2cf5c7045dc9da893c49e))
+
 # Changelog
 
 ## [](///compare/1.1.0...null) (2025-12-15)
