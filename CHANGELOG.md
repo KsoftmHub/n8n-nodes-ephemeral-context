@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.1.0...v1.2.0) (2025-12-15)
+
+
+### Features
+
+* **new:** data type is updated ([0242f58](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/0242f586f704dd00f0b7af9757c062f163c60153))
+
 # [1.1.0](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.0.0...v1.1.0) (2025-12-15)
 
 
