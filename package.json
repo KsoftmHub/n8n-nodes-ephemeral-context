@@ -9,7 +9,7 @@
   "author": "Ksoftm",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ksoftm/n8n-nodes-ephemeral-context.git"
+    "url": "git+https://github.com/KsoftmHub/n8n-nodes-ephemeral-context.git"
   },
   "publishConfig": {
     "access": "public"
