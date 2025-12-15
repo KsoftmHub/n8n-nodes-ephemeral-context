@@ -1,5 +1,7 @@
 # Changelog
 
+## [](///compare/1.1.0...null) (2025-12-15)
+
 ##  (2025-12-15)
 
 ### Features
