@@ -63,26 +63,6 @@ export class SessionStore implements INodeType {
         default: 'set',
       },
       // ----------------------------------
-      // Operation: SET / GET / PUSH / CLEAR (Key)
-      // ----------------------------------
-      {
-        displayName: 'Key',
-        name: 'key',
-        type: 'string',
-        default: '',
-        required: true,
-        displayOptions: {
-          show: {
-            operation: ['set', 'get', 'push', 'clear'],
-          },
-          hide: {
-            operation: ['clear'],
-            scope: ['all'],
-          },
-        },
-        description: 'The key to store/retrieve. Supports dot-notation (e.g. "user.profile.name").',
-      },
-      // ----------------------------------
       // Operation: CLEAR (Scope)
       // ----------------------------------
       {
@@ -106,6 +86,26 @@ export class SessionStore implements INodeType {
         ],
         default: 'key',
         description: 'Whether to clear a specific key or the entire session memory',
+      },
+      // ----------------------------------
+      // Operation: SET / GET / PUSH / CLEAR (Key)
+      // ----------------------------------
+      {
+        displayName: 'Key',
+        name: 'key',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+          show: {
+            operation: ['set', 'get', 'push', 'clear'],
+          },
+          hide: {
+            operation: ['clear'],
+            scope: ['all'],
+          },
+        },
+        description: 'The key to store/retrieve. Supports dot-notation (e.g. "user.profile.name").',
       },
       // ----------------------------------
       // Operation: SET / PUSH (Value)
