@@ -10,7 +10,7 @@ import {
 interface ISessionData {
   [executionId: string]: {
     data: any;
-    timestamp: number; // Added to track when this session was last touched
+    timestamp: number;
   };
 }
 
@@ -35,9 +35,9 @@ export class SessionStore implements INodeType {
         noDataExpression: true,
         options: [
           {
-            name: 'Set Value',
+            name: 'Set Value(s)',
             value: 'set',
-            description: 'Store a value by key (supports dot.notation)',
+            description: 'Store multiple values by key (supports dot.notation)',
           },
           {
             name: 'Get Value',
@@ -61,6 +61,108 @@ export class SessionStore implements INodeType {
           },
         ],
         default: 'set',
+      },
+
+      // ----------------------------------
+      // Operation: SET (Multiple Values)
+      // ----------------------------------
+      {
+        displayName: 'Values to Set',
+        name: 'assignments',
+        type: 'fixedCollection',
+        typeOptions: {
+          multipleValues: true,
+        },
+        displayOptions: {
+          show: {
+            operation: ['set'],
+          },
+        },
+        default: {},
+        options: [
+          {
+            name: 'values',
+            displayName: 'Values',
+            values: [
+              {
+                displayName: 'Key',
+                name: 'key',
+                type: 'string',
+                default: '',
+                description: 'Key to set (e.g. user.name)',
+              },
+              {
+                displayName: 'Type',
+                name: 'type',
+                type: 'options',
+                options: [
+                  { name: 'String', value: 'string' },
+                  { name: 'Number', value: 'number' },
+                  { name: 'Boolean', value: 'boolean' },
+                  { name: 'JSON', value: 'json' },
+                ],
+                default: 'string',
+              },
+              {
+                displayName: 'Value',
+                name: 'valueString',
+                type: 'string',
+                displayOptions: {
+                  show: { type: ['string'] },
+                },
+                default: '',
+              },
+              {
+                displayName: 'Value',
+                name: 'valueNumber',
+                type: 'number',
+                displayOptions: {
+                  show: { type: ['number'] },
+                },
+                default: 0,
+              },
+              {
+                displayName: 'Value',
+                name: 'valueBoolean',
+                type: 'boolean',
+                displayOptions: {
+                  show: { type: ['boolean'] },
+                },
+                default: false,
+              },
+              {
+                displayName: 'Value (JSON)',
+                name: 'valueJson',
+                type: 'json',
+                displayOptions: {
+                  show: { type: ['json'] },
+                },
+                default: '{}',
+              },
+            ],
+          },
+        ],
+      },
+
+      // ----------------------------------
+      // Operation: GET / PUSH / CLEAR (Single Key)
+      // ----------------------------------
+      {
+        displayName: 'Key',
+        name: 'key',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+          show: {
+            operation: ['get', 'push', 'clear'],
+          },
+          hide: {
+            operation: ['clear'],
+            scope: ['all'],
+          },
+        },
+        description: 'The key to store/retrieve. Supports dot-notation (e.g. "user.profile.name").',
       },
       // ----------------------------------
       // Operation: CLEAR (Scope)
@@ -87,28 +189,9 @@ export class SessionStore implements INodeType {
         default: 'key',
         description: 'Whether to clear a specific key or the entire session memory',
       },
+
       // ----------------------------------
-      // Operation: SET / GET / PUSH / CLEAR (Key)
-      // ----------------------------------
-      {
-        displayName: 'Key',
-        name: 'key',
-        type: 'string',
-        default: '',
-        required: true,
-        displayOptions: {
-          show: {
-            operation: ['set', 'get', 'push', 'clear'],
-          },
-          hide: {
-            operation: ['clear'],
-            scope: ['all'],
-          },
-        },
-        description: 'The key to store/retrieve. Supports dot-notation (e.g. "user.profile.name").',
-      },
-      // ----------------------------------
-      // Operation: SET / PUSH (Value)
+      // Operation: PUSH (Single Value)
       // ----------------------------------
       {
         displayName: 'Value Type',
@@ -116,7 +199,7 @@ export class SessionStore implements INodeType {
         type: 'options',
         displayOptions: {
           show: {
-            operation: ['set', 'push'],
+            operation: ['push'],
           },
         },
         options: [
@@ -124,7 +207,6 @@ export class SessionStore implements INodeType {
           { name: 'Number', value: 'number' },
           { name: 'Boolean', value: 'boolean' },
           { name: 'JSON / Object', value: 'json' },
-          { name: 'Expression', value: 'expression' },
         ],
         default: 'string',
         description: 'The type of data you want to store',
@@ -135,12 +217,11 @@ export class SessionStore implements INodeType {
         type: 'string',
         displayOptions: {
           show: {
-            operation: ['set', 'push'],
-            valueType: ['string', 'expression'],
+            operation: ['push'],
+            valueType: ['string'],
           },
         },
         default: '',
-        description: 'The value to store',
       },
       {
         displayName: 'Value',
@@ -148,7 +229,7 @@ export class SessionStore implements INodeType {
         type: 'number',
         displayOptions: {
           show: {
-            operation: ['set', 'push'],
+            operation: ['push'],
             valueType: ['number'],
           },
         },
@@ -160,7 +241,7 @@ export class SessionStore implements INodeType {
         type: 'boolean',
         displayOptions: {
           show: {
-            operation: ['set', 'push'],
+            operation: ['push'],
             valueType: ['boolean'],
           },
         },
@@ -172,7 +253,7 @@ export class SessionStore implements INodeType {
         type: 'json',
         displayOptions: {
           show: {
-            operation: ['set', 'push'],
+            operation: ['push'],
             valueType: ['json'],
           },
         },
@@ -185,19 +266,12 @@ export class SessionStore implements INodeType {
   // In-Memory Storage & Garbage Collection Config
   // --------------------------------------------------------------------------
   private static sessionStore: ISessionData = {};
-
-  // How long (in ms) data should survive in RAM before being considered "stale".
-  // 1 Hour = 3600000 ms.
-  // This prevents memory leaks if a workflow errors out before clearing itself.
-  private static readonly TTL_MS = 3600000;
+  private static readonly TTL_MS = 3600000; // 1 Hour
 
   private static runGarbageCollection() {
     const now = Date.now();
     const keys = Object.keys(SessionStore.sessionStore);
-
-    // Only run GC if there are actually items, to save CPU
     if (keys.length === 0) return;
-
     keys.forEach(execId => {
       const entry = SessionStore.sessionStore[execId];
       if (now - entry.timestamp > SessionStore.TTL_MS) {
@@ -206,7 +280,6 @@ export class SessionStore implements INodeType {
     });
   }
 
-  // Helper: Set value using dot notation
   private static setDeep(obj: any, path: string, value: any) {
     const keys = path.split('.');
     let current = obj;
@@ -220,7 +293,6 @@ export class SessionStore implements INodeType {
     current[keys[keys.length - 1]] = value;
   }
 
-  // Helper: Get value using dot notation
   private static getDeep(obj: any, path: string, defaultValue: any = undefined) {
     const keys = path.split('.');
     let current = obj;
@@ -238,18 +310,14 @@ export class SessionStore implements INodeType {
     const returnData: INodeExecutionData[] = [];
     const executionId = this.getExecutionId();
 
-    // 1. Run Garbage Collection occasionally (e.g. 1% chance or every run)
-    // Since this is light, we can run it every time or wrap in a Math.random check
     SessionStore.runGarbageCollection();
 
-    // 2. Initialize or Update Timestamp
     if (!SessionStore.sessionStore[executionId]) {
       SessionStore.sessionStore[executionId] = {
         data: {},
         timestamp: Date.now()
       };
     } else {
-      // Update timestamp to keep session alive
       SessionStore.sessionStore[executionId].timestamp = Date.now();
     }
 
@@ -260,7 +328,36 @@ export class SessionStore implements INodeType {
         const sessionRef = SessionStore.sessionStore[executionId].data;
         let result: any = {};
 
-        if (operation === 'set' || operation === 'push') {
+        if (operation === 'set') {
+          // Handle Multiple Sets via Fixed Collection
+          const assignments = this.getNodeParameter('assignments', i) as { values: any[] };
+          const setResults: any = {};
+
+          if (assignments && assignments.values) {
+            for (const item of assignments.values) {
+              const key = item.key;
+              const type = item.type;
+              let finalValue;
+
+              if (type === 'string') finalValue = item.valueString;
+              else if (type === 'number') finalValue = item.valueNumber;
+              else if (type === 'boolean') finalValue = item.valueBoolean;
+              else if (type === 'json') {
+                try {
+                  finalValue = typeof item.valueJson === 'string' ? JSON.parse(item.valueJson) : item.valueJson;
+                } catch (e) {
+                  finalValue = {}; // Fallback
+                }
+              }
+
+              SessionStore.setDeep(sessionRef, key, finalValue);
+              setResults[key] = finalValue;
+            }
+          }
+          result = { success: true, op: 'set', updates: setResults };
+
+        } else if (operation === 'push') {
+          // Push handles single values to arrays
           const key = this.getNodeParameter('key', i) as string;
           const valueType = this.getNodeParameter('valueType', i) as string;
           let value = this.getNodeParameter('value', i) as any;
@@ -269,21 +366,17 @@ export class SessionStore implements INodeType {
             try { value = JSON.parse(value); } catch (e) { }
           }
 
-          if (operation === 'set') {
-            SessionStore.setDeep(sessionRef, key, value);
-            result = { success: true, key, value, op: 'set' };
-          } else if (operation === 'push') {
-            const currentArray = SessionStore.getDeep(sessionRef, key);
-            if (Array.isArray(currentArray)) {
-              currentArray.push(value);
-              result = { success: true, key, newLength: currentArray.length, op: 'push' };
-            } else if (currentArray === undefined) {
-              SessionStore.setDeep(sessionRef, key, [value]);
-              result = { success: true, key, newLength: 1, op: 'push (created)' };
-            } else {
-              throw new NodeOperationError(this.getNode(), `Key "${key}" exists but is not an array.`);
-            }
+          const currentArray = SessionStore.getDeep(sessionRef, key);
+          if (Array.isArray(currentArray)) {
+            currentArray.push(value);
+            result = { success: true, key, newLength: currentArray.length, op: 'push' };
+          } else if (currentArray === undefined) {
+            SessionStore.setDeep(sessionRef, key, [value]);
+            result = { success: true, key, newLength: 1, op: 'push (created)' };
+          } else {
+            throw new NodeOperationError(this.getNode(), `Key "${key}" exists but is not an array.`);
           }
+
         } else if (operation === 'get') {
           const key = this.getNodeParameter('key', i) as string;
           const value = SessionStore.getDeep(sessionRef, key);
@@ -299,7 +392,6 @@ export class SessionStore implements INodeType {
 
         } else if (operation === 'clear') {
           const scope = this.getNodeParameter('scope', i) as string;
-
           if (scope === 'all') {
             SessionStore.sessionStore[executionId].data = {};
             result = { success: true, op: 'clear_all' };
