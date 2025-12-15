@@ -12,7 +12,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "esbuild SessionStore.node.ts --bundle --platform=node --outfile=dist/SessionStore.node.js",
+    "build": "node bin/build.js",
     "dev": "npm run build -- --watch",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "echo \"Error: no test specified\" && exit 1"
