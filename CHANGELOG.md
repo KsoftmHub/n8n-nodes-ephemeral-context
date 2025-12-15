@@ -2,8 +2,6 @@
 
 ## [](///compare/1.1.0...null) (2025-12-15)
 
-##  (2025-12-15)
-
 ### Features
 
 * add ephemeral session store node for in-memory data management with garbage collection. e409305

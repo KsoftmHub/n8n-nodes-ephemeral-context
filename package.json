@@ -19,7 +19,6 @@
     "build": "node bin/build.js",
     "dev": "npm run build -- --watch",
     "lint": "tslint -p tsconfig.json -c tslint.json",
-    "release": "release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
@@ -31,14 +30,9 @@
     ]
   },
   "devDependencies": {
-    "@release-it/conventional-changelog": "^10.0.3",
     "@types/node": "^14.14.31",
     "esbuild": "^0.27.1",
     "n8n-workflow": "^0.116.0",
-    "release-it": "^19.1.0",
     "typescript": "^4.2.3"
-  },
-  "release-it": {
-    "$schema": "https://unpkg.com/release-it/schema/release-it.json"
   }
 }
