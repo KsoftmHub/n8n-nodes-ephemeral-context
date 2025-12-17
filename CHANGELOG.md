@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.3.0...v1.3.1) (2025-12-17)
+
+
+### Performance Improvements
+
+* Introduce Session Store (Ephemeral) node for in-memory data management within workflows, including a new license and readme updates. ([b514025](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/b514025c0742471f31eede6640c513397a383d67))
+
 # [1.3.0](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.2.0...v1.3.0) (2025-12-17)
 
 
