@@ -157,26 +157,6 @@ export class SessionStore implements INodeType {
       },
 
       // ----------------------------------
-      // Operation: GET / PUSH / CLEAR (Single Key)
-      // ----------------------------------
-      {
-        displayName: 'Key',
-        name: 'key',
-        type: 'string',
-        default: '',
-        required: true,
-        displayOptions: {
-          show: {
-            operation: ['get', 'push', 'clear'],
-          },
-          hide: {
-            operation: ['clear'],
-            scope: ['all'],
-          },
-        },
-        description: 'The key to store/retrieve. Supports dot-notation (e.g. "user.profile.name").',
-      },
-      // ----------------------------------
       // Operation: CLEAR (Scope)
       // ----------------------------------
       {
@@ -200,6 +180,26 @@ export class SessionStore implements INodeType {
         ],
         default: 'key',
         description: 'Whether to clear a specific key or the entire session memory',
+      },
+      // ----------------------------------
+      // Operation: GET / PUSH / CLEAR (Single Key)
+      // ----------------------------------
+      {
+        displayName: 'Key',
+        name: 'key',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+          show: {
+            operation: ['get', 'push', 'clear'],
+          },
+          hide: {
+            operation: ['clear'],
+            scope: ['all'],
+          },
+        },
+        description: 'The key to store/retrieve. Supports dot-notation (e.g. "user.profile.name").',
       },
 
       // ----------------------------------
@@ -430,7 +430,10 @@ export class SessionStore implements INodeType {
           }
         }
 
-        returnData.push({ json: result });
+        returnData.push({
+          json: result,
+          binary: items[i].binary,
+        });
 
       } catch (error) {
         if (this.continueOnFail()) {
