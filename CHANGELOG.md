@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.3.1...v1.4.0) (2025-12-17)
+
+
+### Features
+
+* **key:** add Session Store (Ephemeral) node for in-memory data storage with various operations and scopes. ([cfe6d65](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/commit/cfe6d6537edd7fddf9c1093eff3daedd8733279f))
+
 ## [1.3.1](https://github.com/KsoftmHub/n8n-nodes-ephemeral-context/compare/v1.3.0...v1.3.1) (2025-12-17)
 
 
