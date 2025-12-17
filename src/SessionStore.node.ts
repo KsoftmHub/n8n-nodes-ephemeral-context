@@ -247,6 +247,25 @@ export class SessionStore implements INodeType {
       },
 
       // ----------------------------------
+      // Clear Specifics
+      // ----------------------------------
+      {
+        displayName: 'Target',
+        name: 'clearTarget',
+        type: 'options',
+        displayOptions: {
+          show: {
+            operation: ['clear'],
+          },
+        },
+        options: [
+          { name: 'Specific Key', value: 'key' },
+          { name: 'Entire Scope', value: 'all' },
+        ],
+        default: 'key',
+      },
+
+      // ----------------------------------
       // Common Key Param (Get, Increment, Decrement, Exists, Arrays)
       // ----------------------------------
       {
@@ -266,29 +285,10 @@ export class SessionStore implements INodeType {
           },
           hide: {
             operation: ['clear'],
-            scope: ['all'],
+            clearTarget: ['all'],
           },
         },
         description: 'The key to target. Supports dot-notation.',
-      },
-
-      // ----------------------------------
-      // Clear Specifics
-      // ----------------------------------
-      {
-        displayName: 'Target',
-        name: 'clearTarget',
-        type: 'options',
-        displayOptions: {
-          show: {
-            operation: ['clear'],
-          },
-        },
-        options: [
-          { name: 'Specific Key', value: 'key' },
-          { name: 'Entire Scope', value: 'all' },
-        ],
-        default: 'key',
       },
 
       // ----------------------------------
