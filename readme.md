@@ -1,90 +1,94 @@
 # n8n-nodes-ephemeral-context
 
-A lightweight, in-memory "RAM" for n8n workflows.
+[![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://badge.fury.io/js/%40ksoftm%2Fn8n-nodes-ephemeral-context.svg)](https://badge.fury.io/js/%40ksoftm%2Fn8n-nodes-ephemeral-context)
 
-Stop fighting with complex Merge Nodes just to pass data between disconnected branches. This node allows you to store, retrieve, and accumulate data instantly across any part of a workflow execution, without external databases like Redis.
 
-## 🚀 Why do I need this?
+A powerful, in-memory "RAM" for n8n workflows. Teleport data between branches, manage counters, and build complex state entirely in memory.
 
-In n8n, data flows downstream like a river. If you split your workflow into Branch A and Branch B, they cannot see each other's data. To combine them, you normally have to use complex Merge nodes.
+Stop fighting with complex Merge Nodes just to pass data between disconnected branches. This node allows you to store, retrieve, and accumulate data instantly across any part of a workflow execution, or even share data across different workflows.
 
-With Ephemeral Context, you can:
+## 🚀 Key Features
 
-- **Teleport Data**: Set a variable in Branch A, read it in Branch B.
-- **Simplify Loops**: Accumulate items (like `success_count` or `error_list`) inside a loop without complex "Previous Node" references.
-- **AI Memory**: Build a "Context Window" for AI Agents by pushing thoughts to an array in the background, then reading the full history at the end.
+- **Teleport Data**: Set variables in Branch A, read them in Branch B.
+- **Global High-Speed Cache**: Share data between separate workflow executions (e.g., API rate limit counters).
+- **Advanced State Management**: Atomic counters, Queues (Push/Pop/Shift), and Existence checks.
+- **Safety First**: Memory limits to prevent crashes and automatic garbage collection.
 
 ## 📦 Operations
 
 ### 1. Set Value
+Store values in memory.
+- **Modes**:
+  - `Always Set`: Overwrite or create.
+  - `If Not Exists (NX)`: Only set if the key is missing (locks).
+  - `If Exists (XX)`: Update only if it already exists.
+- **Key**: Supports dot-notation (e.g., `user.details.id`).
+- **Value**: String, Number, Boolean, Array, or Object.
 
-Stores a value in the current execution's memory.
+### 2. Get / Check / Clear
+- **Get Value**: Retrieve a specific value by key.
+- **Get All**: Retrieve the entire store for the current scope.
+- **Check Exists**: Efficiently check `true/false` if a key exists.
+- **Clear**: Remove a specific key or reset the entire scope.
 
-- **Key**: Supports dot-notation (e.g., `user.details.id`). It will automatically create the nested objects `user` and `details` if they don't exist.
-- **Value**: String, Number, Boolean, or JSON.
+### 3. Atomic Counters
+Thread-safe numeric operations.
+- **Increment / Decrement**: Modify a number without race conditions. Perfect for counting loops or rate limiting.
 
-### 2. Get Value
+### 4. Array Operations
+Turn arrays into Queues or Stacks.
+- **Push**: Append to end.
+- **Unshift**: Prepend to start.
+- **Pop**: Remove and return the last item (Stack LIFO).
+- **Shift**: Remove and return the first item (Queue FIFO).
+- **Remove Item**: Remove a key entirely.
 
-Retrieves a specific value.
+## 🌐 Scopes
 
-- **Key**: e.g., `user.details.id`.
-- **Returns**: The specific value found.
+Control how long your data lives:
 
-### 3. Push to Array (The Loop Saver)
+| Scope | Lifetime | Visibility | Use Case |
+| :--- | :--- | :--- | :--- |
+| **Execution** (Default) | Single Run | Isolated to current run | Passing variables between IF branches |
+| **Workflow** | App Lifecycle | Shared by all runs of ONE workflow | Aggregating data across multiple webhook calls |
+| **Global** | App Lifecycle | Shared by ALL workflows | Global rate limiters, cross-workflow signals |
 
-Appends a value to an array. If the array doesn't exist, it creates it.
-
-- **Use Case**: Perfect for logging errors inside a SplitInBatches loop.
-- **Example**: Push `{"email": "bad@email.com", "error": "404"}` to key `failed_imports`.
-
-### 4. Get All
-
-Retrieves the entire session object for the current execution.
-
-- **Use Case**: Pass this entire object to an LLM (ChatGPT/Claude) as "Context" or "Memory".
-
-### 5. Clear
-
-- **Scope**: Clear a specific key or Reset All to free up memory.
+> **Note**: All data is stored in **Memory (RAM)**. If you restart your n8n instance, **all data is lost**.
 
 ## 💡 Usage Scenarios
 
-### Scenario A: The "Disconnected Branch" Problem
+### Scenario A: The "Disconnected Branch"
+You have an IF node and want to collect data from both branches without complex merges.
+- **True Branch**: `Push` ID to `processed_ids`.
+- **False Branch**: `Push` ID to `failed_ids`.
+- **Finally**: `Get All` to see the full report.
 
-You have an IF node. You want to count how many items went to True vs False, but you don't want to merge the branches immediately.
+### Scenario B: Global Rate Limiter
+Prevent a specific API from being called too often across multiple workflows.
+1. **Scope**: `Global`
+2. **Operation**: `Increment` key `api_usage_minute`.
+3. Checks if `api_usage_minute` > 100 before making the request.
 
-- **True Branch**: Node Session Store -> Operation: Push -> Key: `processed_ids` -> Value: `{{$json.id}}`.
-- **False Branch**: Node Session Store -> Operation: Push -> Key: `failed_ids` -> Value: `{{$json.id}}`.
-- **End of Workflow**: Node Session Store -> Operation: Get All.
-- **Output**: `{ "processed_ids": [1, 2], "failed_ids": [3] }`
+### Scenario C: "Once Processed" Lock
+Ensure a resource is only processed once, even if triggered simultaneously.
+1. **Operation**: `Set` with mode `If Not Exists (NX)`.
+2. **Key**: `lock_resource_123`.
+3. If result `success: false`, stop execution.
 
-### Scenario B: AI Agent "Inner Monologue"
+## ⚠️ Limitations & Safety
 
-You are building a ReAct-style agent that performs Google Searches before answering.
-
-- **Init**: Set `thoughts = []`.
-- **Agent Step 1**: "I need to search for the weather." -> Push to `thoughts`.
-- **Agent Step 2**: Perform HTTP Request. -> Push result to `thoughts`.
-- **Final Step**: Get `thoughts` and send to LLM to summarize the answer.
-
-## ⚠️ Important Architectural Limitations
-
-This node uses Process RAM (Global Scope). It is designed for speed and simplicity, but you must understand the limitations:
-
-- **It is Ephemeral**: If you restart your n8n instance, all data is lost. Do not use this for long-term storage (use a Database node for that).
-- **Queue Mode & Wait Nodes**:
-    - If you run n8n in Queue Mode (Scaling mode with Workers) AND you use a Wait Node (e.g., "Wait for Webhook"), the execution might resume on a different server.
-    - Since this data is stored in the RAM of Server A, if the workflow wakes up on Server B, the memory will be empty.
-    - **Rule of Thumb**: Only use this node for workflows that run continuously from start to finish. Avoid using it across "Wait" nodes in clustered environments.
-
-## 🛠 Technical Details
-
-- **Isolation**: Data is keyed by `executionId`. Workflow A cannot read Workflow B's data.
-- **Garbage Collection**: To prevent memory leaks, the node includes an automatic Garbage Collector. Session data is strictly typed to expire after 1 hour (configurable in source) of inactivity.
+1.  **Ephemeral**: Data is lost on n8n restart.
+2.  **Memory Limits**:
+    *   Maximum 10MB per value.
+    *   Maximum 100MB total store size (soft limit).
+3.  **Cluster Environments**:
+    *   This node uses **Process RAM**.
+    *   If you use **Queue Mode** with multiple workers, "Global" and "Workflow" scopes **WILL NOT** sync between servers.
+    *   Execution scope works fine as long as the execution stays on one worker (avoid Wait nodes if using Queue Mode).
 
 ## 📥 Installation
-
-Copy the `dist` folder to your n8n custom nodes directory or install via npm if published:
 
 ```bash
 npm install @ksoftm/n8n-nodes-ephemeral-context
